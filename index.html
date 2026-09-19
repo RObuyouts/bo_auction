@@ -40,10 +40,7 @@
         }
         h2 { color: #60a5fa; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0; font-size: 16px; }
         label { font-size: 13px; color: #9ca3af; display: block; margin-bottom: 8px; }
-        .search-box {
-            display: flex;
-            gap: 10px;
-        }
+        .search-box { display: flex; gap: 10px; }
         input[type="text"] {
             flex: 1;
             padding: 12px;
@@ -63,7 +60,6 @@
             cursor: pointer;
         }
         button:hover { background-color: var(--accent-hover); }
-        
         .slot-card {
             background-color: #0b0f19;
             border: 1px solid var(--border-color);
@@ -71,13 +67,8 @@
             padding: 14px;
             border-radius: 6px;
             margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
         .item-name { font-weight: bold; color: #60a5fa; font-size: 14px; }
-        .slot-loc { background: #1f2937; padding: 4px 8px; border-radius: 4px; font-size: 13px; color: #fbbf24; font-family: monospace; }
-        
         .footer {
             margin-top: 25px;
             font-size: 12px;
@@ -99,7 +90,7 @@
     <div class="card">
         <label>Ilagay ang iyong IGN:</label>
         <div class="search-box">
-            <input type="text" id="ignInput" placeholder="Halimbawa: xButter" onkeypress="handleEnter(event)">
+            <input type="text" id="ignInput" placeholder="Halimbawa: Rene" onkeypress="handleEnter(event)">
             <button onclick="searchMySlots()">Hanapin</button>
         </div>
     </div>
@@ -111,16 +102,15 @@
         </div>
     </div>
 
-    <div class="footer">Code by xButter Designed by SeiMustDie</div>
+    <div class="footer">Coded by xButter Designed by SeiMustDie</div>
 </div>
 
 <script>
     const API_KEY = "$2a$10$GFYQ9.g6HJ5DBWF0TS04z.ZZrBx7eEGyxEE/sTQEZVx2U.8p2T00.";
-    const BIN_ID = localStorage.getItem('jugjugan_bin_id') || "";
+    const BIN_ID = "6aaea2dbffd5d1605319a3f9";
     let roster = {};
 
     async function loadData() {
-        if (!BIN_ID) return;
         try {
             let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: { 'X-Master-Key': API_KEY }
@@ -147,7 +137,6 @@
             return;
         }
 
-        // Hanapin nang hindi pinapansin ang malaki/maliit na titik (case-insensitive search)
         let foundKey = Object.keys(roster).find(k => k.toLowerCase() === query);
 
         if (!foundKey || !roster[foundKey] || roster[foundKey].length === 0) {
@@ -159,7 +148,6 @@
         let html = `<div style="font-size: 13px; color: #9ca3af; margin-bottom: 10px;">Resulta para kay: <b style="color:#fff;">${foundKey}</b></div>`;
         
         slots.forEach(slot => {
-            // Paghiwalayin ang Item at Slot location para mas maganda tingnan
             html += `
                 <div class="slot-card">
                     <span class="item-name">🔹 ${slot}</span>
