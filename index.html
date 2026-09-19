@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuyOuts Auction Slot - Member Access</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #111827;
+            --text-color: #f3f4f6;
+            --accent-color: #3b82f6;
+            --border-color: #1f2937;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .header-title img { width: 40px; height: 40px; border-radius: 4px; }
+        .header-title h2 { font-size: 18px; margin: 0; color: #fff; }
+        .header-title span { font-size: 11px; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; display: block; }
+        
+        .alert-box {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+        label { font-size: 13px; color: #9ca3af; display: block; margin-bottom: 6px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            background-color: #0b0f19;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover { background-color: #2563eb; }
+        
+        .result-box {
+            margin-top: 20px;
+            background: #0b0f19;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--accent-color);
+            display: none;
+        }
+        .footer {
+            margin-top: 25px;
+            font-size: 12px;
+            color: #9ca3af;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        .footer img { width: 20px; height: 20px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header-title">
+        <div style="background:#374151; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:6px; font-size:20px;">📦</div>
+        <div>
+            <span>Member Access</span>
+            <h2>BuyOuts Auction Slot</h2>
+        </div>
+    </div>
+
+    <div id="statusAlert" class="alert-box">Ilagay ang iyong IGN para makita ang iyong assigned slot.</div>
+
+    <label>Your IGN</label>
+    <input type="text" id="memberIGN" placeholder="Enter your in-game name">
+
+    <button onclick="searchSlot()">View My Assigned Slot</button>
+
+    <div id="resultPanel" class="result-box">
+        <h3 style="margin-top:0; color:#60a5fa; font-size:16px;">Mga Nakatalagang Slot Mo:</h3>
+        <p id="slotDetails" style="font-size: 14px; line-height: 1.6; margin: 0;"></p>
+    </div>
+</div>
+
+<div class="footer">
+    Developed by <span>xButter</span> and <span>SeiMustDie</span>
+</div>
+
+<script>
+    // Pansamantalang database simulation para sa member view.
+    // Sa actual na gamit, maaari itong i-konekta sa isang shared database o JSON file mula sa Admin.
+    const dummyDatabase = {
+        "sniperking": { puppet: "Page 1, Row 2", feather: "Page 2, Row 3 (LND Feather)" },
+        "highpriest": { puppet: null, feather: "Page 1, Row 1 (TaS Feather)" }
+    };
+
+    function searchSlot() {
+        let ignInput = document.getElementById('memberIGN').value.trim().toLowerCase();
+        let alertBox = document.getElementById('statusAlert');
+        let resultPanel = document.getElementById('resultPanel');
+        let slotDetails = document.getElementById('slotDetails');
+
+        if (!ignInput) {
+            alertBox.style.backgroundColor = "#fee2e2";
+            alertBox.style.color = "#991b1b";
+            alertBox.innerText = "Please enter your IGN.";
+            resultPanel.style.display = "none";
+            return;
+        }
+
+        let data = dummyDatabase[ignInput];
+        if (data) {
+            alertBox.style.backgroundColor = "#d1fae5";
+            alertBox.style.color = "#065f46";
+            alertBox.innerText = "May nakitang assignment para sa iyo!";
+            
+            let htmlText = "";
+            if (data.puppet) htmlText += `🧩 <b>Puppet Fragment:</b> ${data.puppet}<br>`;
+            if (data.feather) htmlText += `🪶 <b>Feather:</b> ${data.feather}`;
+            
+            slotDetails.innerHTML = htmlText;
+            resultPanel.style.display = "block";
+        } else {
+            alertBox.style.backgroundColor = "#fef3c7";
+            alertBox.style.color = "#92400e";
+            alertBox.innerText = "No assigned slots found.";
+            resultPanel.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>
