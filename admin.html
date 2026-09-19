@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BuyOuts Auction Slot - Admin Portal</title>
+    <title>BuyOuts Auction Slot - Admin Portal (Cloud Sync)</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -35,10 +35,8 @@
             align-items: center;
         }
         .header h1 { margin: 0; font-size: 20px; color: #60a5fa; }
-        
         .grid-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
         @media (max-width: 768px) { .grid-panels { grid-template-columns: 1fr; } }
-
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -71,29 +69,14 @@
         button:hover { background-color: var(--accent-hover); }
         .btn-danger { background-color: var(--danger-color); width: auto; padding: 5px 10px; margin: 0; }
         .btn-success { background-color: var(--success-color); }
-
-        .info-box {
-            background-color: #1f2937;
-            border-left: 4px solid var(--info-color);
-            padding: 12px;
-            border-radius: 4px;
-            margin-top: 15px;
-            font-size: 13px;
-        }
-        .info-box h4 { margin: 0 0 5px 0; color: #60a5fa; font-size: 14px; }
-
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { padding: 10px; border: 1px solid var(--border-color); text-align: left; font-size: 13px; }
         th { background-color: #1f2937; }
-        
         .footer {
             margin-top: 25px;
             font-size: 12px;
             color: #9ca3af;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
+            text-align: center;
             border-top: 1px solid var(--border-color);
             padding-top: 15px;
         }
@@ -103,8 +86,8 @@
 
 <div class="container">
     <div class="header">
-        <h1>🔒 BuyOuts Auction - Rotation Remainder Portal</h1>
-        <span style="font-size: 12px; background: #1f2937; padding: 5px 10px; border-radius: 4px; color: #fbbf24;">Restricted Access</span>
+        <h1>🔒 BuyOuts Auction - Admin Portal (Cloud Sync)</h1>
+        <span id="syncStatus" style="font-size: 12px; background: #1f2937; padding: 5px 10px; border-radius: 4px; color: #22c55e;">Connected</span>
     </div>
 
     <div class="grid-panels">
@@ -113,17 +96,14 @@
             <h2>🧩 Puppet Fragments Assignment</h2>
             <label>Dami ng Puppet Fragments:</label>
             <input type="number" id="stockPuppet" min="0" value="4">
-
             <label>Listahan ng mga IGN (Isang pangalan bawat linya):</label>
             <textarea id="puppetMembers" rows="5" placeholder="Member1&#10;Member2..."></textarea>
-
             <button class="btn-success" onclick="processPuppet()">I-assign ang Puppet</button>
         </div>
 
-        <!-- Panel 2: Feathers (LnD at TaS) na may Rotating Remainder -->
+        <!-- Panel 2: Feathers -->
         <div class="card">
             <h2>🪶 Feathers (LnD & TaS) Assignment</h2>
-            
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                 <div>
                     <label>LnD Stock:</label>
@@ -134,17 +114,9 @@
                     <input type="number" id="stockTaS" min="0" value="80">
                 </div>
             </div>
-
             <label>Listahan ng mga IGN (Isang pangalan bawat linya):</label>
             <textarea id="featherMembers" rows="5" placeholder="Member1&#10;Member2..."></textarea>
-
             <button class="btn-success" onclick="processFeathers()">I-distribute ang Feathers</button>
-
-            <!-- Rotation Remainder Log -->
-            <div id="remainderPanel" class="info-box" style="display: none;">
-                <h4>🔄 Rotation Remainder Log:</h4>
-                <div id="remainderContent" style="color: #d1d5db;">Wala pang report.</div>
-            </div>
         </div>
     </div>
 
@@ -161,23 +133,62 @@
                 </tr>
             </thead>
             <tbody id="adminMasterTable">
-                <tr><td colspan="3" style="text-align:center; color:#9ca3af;">Wala pang nakatalagang miyembro.</td></tr>
+                <tr><td colspan="3" style="text-align:center; color:#9ca3af;">Nag-a-load ng data mula sa cloud...</td></tr>
             </tbody>
         </table>
     </div>
 
-    <div class="footer">
-        Developed by xButter and SeiMustDie
-    </div>
+    <div class="footer">Coded by xButter Designed by SeiMustDie</div>
 </div>
 
 <script>
-    let roster = JSON.parse(localStorage.getItem('jugjugan_roster')) || {};
-    let globalRotationLog = [];
+    const API_KEY = "$2a$10$GFYQ9.g6HJ5DBWF0TS04z.ZZrBx7eEGyxEE/sTQEZVx2U.8p2T00.";
+    const BIN_ID = localStorage.getItem('jugjugan_bin_id') || ""; 
+    let roster = {};
 
-    function saveToStorage() {
-        localStorage.setItem('jugjugan_roster', JSON.stringify(roster));
-        localStorage.setItem('jugjugan_rotation_log', JSON.stringify(globalRotationLog));
+    async function loadData() {
+        if (!BIN_ID) {
+            updateUI();
+            return;
+        }
+        try {
+            let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
+                headers: { 'X-Master-Key': API_KEY }
+            });
+            let data = await res.json();
+            roster = data.record || {};
+            updateUI();
+        } catch (e) {
+            console.error("Error loading data", e);
+        }
+    }
+
+    async function saveData() {
+        document.getElementById('syncStatus').innerText = "Saving...";
+        try {
+            let url = BIN_ID ? `https://api.jsonbin.io/v3/b/${BIN_ID}` : `https://api.jsonbin.io/v3/b`;
+            let method = BIN_ID ? "PUT" : "POST";
+            
+            let res = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Master-Key': API_KEY,
+                    ...(BIN_ID ? {} : {'X-Bin-Private': 'false'})
+                },
+                body: JSON.stringify(roster)
+            });
+            let data = await res.json();
+            if (!BIN_ID && data.metadata && data.metadata.id) {
+                localStorage.setItem('jugjugan_bin_id', data.metadata.id);
+                window.location.reload();
+            }
+            document.getElementById('syncStatus').innerText = "Connected";
+            document.getElementById('syncStatus').style.color = "#22c55e";
+        } catch (e) {
+            document.getElementById('syncStatus').innerText = "Sync Failed";
+            document.getElementById('syncStatus').style.color = "#ef4444";
+        }
     }
 
     function processPuppet() {
@@ -202,7 +213,7 @@
             }
         }
 
-        saveToStorage();
+        saveData();
         updateUI();
         alert('Matagumpay na na-assign ang Puppet Fragments!');
     }
@@ -218,21 +229,14 @@
             return;
         }
 
-        globalRotationLog = [];
         let globalIndex = 0;
-
         function assignFeathersWithRotation(itemName, totalStock) {
             if (totalStock <= 0) return;
-
             let numMembers = members.length;
-
-            // Dito, ginagamit natin ang simpleng modulo loop mula 0 hanggang totalStock.
-            // Ibig sabihin, kung may remainder, ito ay diretso ring iikot pabalik sa simula (top) ng listahan ng mga miyembro.
             for (let i = 0; i < totalStock; i++) {
                 let targetMember = members[i % numMembers];
                 let pageNum = Math.floor(globalIndex / 4) + 1;
                 let rowNum = (globalIndex % 4) + 1;
-                
                 let isExtra = i >= (Math.floor(totalStock / numMembers) * numMembers);
                 let labelExtra = isExtra ? ` (${itemName} - Extra/Rotation)` : ` (${itemName})`;
                 let slotText = `Page ${pageNum}, Row ${rowNum}${labelExtra}`;
@@ -241,19 +245,8 @@
                 if (!roster[targetMember].includes(slotText)) {
                     roster[targetMember].push(slotText);
                 }
-
-                if (isExtra) {
-                    globalRotationLog.push({
-                        item: itemName,
-                        member: targetMember,
-                        slot: `Page ${pageNum}, Row ${rowNum}`
-                    });
-                }
-
                 globalIndex++;
             }
-
-            // Panatilihing nakasalalay sa simula ng susunod na pahina ang susunod na item type
             if (globalIndex % 4 !== 0) {
                 globalIndex += (4 - (globalIndex % 4));
             }
@@ -262,47 +255,23 @@
         assignFeathersWithRotation("LND Feather", stockLnD);
         assignFeathersWithRotation("TaS Feather", stockTaS);
 
-        saveToStorage();
+        saveData();
         updateUI();
-        displayRotationLog();
-        alert('Na-distribute na ang Feathers nang pabilog (Rotation from top)! Suriin ang log sa ibaba para sa mga remainder.');
-    }
-
-    function displayRotationLog() {
-        let panel = document.getElementById('remainderPanel');
-        let content = document.getElementById('remainderContent');
-
-        if (globalRotationLog.length === 0) {
-            panel.style.display = 'none';
-            content.innerHTML = 'Walang remainder (saktong hinati sa lahat).';
-            return;
-        }
-
-        panel.style.display = 'block';
-        let html = '';
-        globalRotationLog.forEach(log => {
-            html += `<div style="margin-bottom: 5px;">🔹 Si <b>${log.member}</b> ay nakatanggap ng ekstrang <b>${log.item}</b> (mula sa unahan ng listahan) sa <b>${log.slot}</b></div>`;
-        });
-        content.innerHTML = html;
+        alert('Na-distribute na ang Feathers!');
     }
 
     function removeSlot(ign, index) {
         roster[ign].splice(index, 1);
-        if (roster[ign].length === 0) {
-            delete roster[ign];
-        }
-        saveToStorage();
+        if (roster[ign].length === 0) delete roster[ign];
+        saveData();
         updateUI();
     }
 
     function clearAllData() {
         if (confirm('Sigurado ka bang gusto mong burahin ang lahat ng assignments?')) {
             roster = {};
-            globalRotationLog = [];
-            localStorage.removeItem('jugjugan_rotation_log');
-            saveToStorage();
+            saveData();
             updateUI();
-            document.getElementById('remainderPanel').style.display = 'none';
         }
     }
 
@@ -326,7 +295,7 @@
                     <tr>
                         <td><b>${ign}</b></td>
                         <td>${slotsHTML}</td>
-                        <td><button class="btn-danger" onclick="delete roster['${ign}']; saveToStorage(); updateUI();">Alisin Lahat</button></td>
+                        <td><button class="btn-danger" onclick="delete roster['${ign}']; saveData(); updateUI();">Alisin Lahat</button></td>
                     </tr>
                 `;
             });
@@ -336,13 +305,7 @@
         document.getElementById('admTotalMembers').innerText = keys.length;
     }
 
-    let savedLog = localStorage.getItem('jugjugan_rotation_log');
-    if (savedLog) {
-        globalRotationLog = JSON.parse(savedLog);
-        displayRotationLog();
-    }
-
-    updateUI();
+    loadData();
 </script>
 
 </body>
