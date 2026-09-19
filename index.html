@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BuyOuts Auction Slot - Member Portal</title>
+    <title>BuyOuts Auction - Member Portal</title>
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -12,6 +12,7 @@
             --accent-color: #3b82f6;
             --accent-hover: #2563eb;
             --border-color: #1f2937;
+            --success-color: #22c55e;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -20,7 +21,7 @@
             margin: 0;
             padding: 20px;
         }
-        .container { max-width: 700px; margin: 0 auto; }
+        .container { max-width: 600px; margin: 0 auto; }
         .header {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -38,26 +39,45 @@
             margin-bottom: 20px;
         }
         h2 { color: #60a5fa; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-top: 0; font-size: 16px; }
-        select {
-            width: 100%;
-            padding: 10px;
+        label { font-size: 13px; color: #9ca3af; display: block; margin-bottom: 8px; }
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
             background-color: #0b0f19;
             border: 1px solid var(--border-color);
             color: #fff;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 15px;
         }
-        .slot-box {
+        button {
+            padding: 12px 20px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        button:hover { background-color: var(--accent-hover); }
+        
+        .slot-card {
             background-color: #0b0f19;
             border: 1px solid var(--border-color);
-            padding: 12px;
+            border-left: 4px solid var(--success-color);
+            padding: 14px;
             border-radius: 6px;
-            margin-top: 8px;
-            font-size: 14px;
+            margin-top: 10px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
         }
+        .item-name { font-weight: bold; color: #60a5fa; font-size: 14px; }
+        .slot-loc { background: #1f2937; padding: 4px 8px; border-radius: 4px; font-size: 13px; color: #fbbf24; font-family: monospace; }
+        
         .footer {
             margin-top: 25px;
             font-size: 12px;
@@ -72,21 +92,22 @@
 
 <div class="container">
     <div class="header">
-        <h1>⚔️ BuyOuts Auction Slot - Member Portal</h1>
-        <p style="margin: 5px 0 0 0; font-size: 13px; color: #9ca3af;">Hanapin ang iyong In-Game Name (IGN) para makita ang iyong mga nakatalagang slot.</p>
+        <h1>⚔️ BuyOuts Auction - Member Portal</h1>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: #9ca3af;">I-type ang iyong In-Game Name (IGN) para makita ang iyong mga napanalunang slot.</p>
     </div>
 
     <div class="card">
-        <h2>Piliin ang iyong IGN:</h2>
-        <select id="memberSelect" onchange="showMySlots()">
-            <option value="">-- Naglaload ng mga pangalan... --</option>
-        </select>
+        <label>Ilagay ang iyong IGN:</label>
+        <div class="search-box">
+            <input type="text" id="ignInput" placeholder="Halimbawa: xButter" onkeypress="handleEnter(event)">
+            <button onclick="searchMySlots()">Hanapin</button>
+        </div>
     </div>
 
     <div class="card">
-        <h2>📋 Ang iyong mga Nakatalagang Slot:</h2>
+        <h2>📋 Mga Nakatalagang Slot Mo:</h2>
         <div id="mySlotsContainer">
-            <span style="color: #9ca3af; font-size: 13px;">Wala pang napipiling miyembro o naglo-load pa...</span>
+            <span style="color: #9ca3af; font-size: 13px;">I-type ang iyong IGN sa itaas at pindutin ang Hanapin.</span>
         </div>
     </div>
 
@@ -99,49 +120,53 @@
     let roster = {};
 
     async function loadData() {
-        if (!BIN_ID) {
-            document.getElementById('memberSelect').innerHTML = '<option value="">-- Wala pang data na isini-save ng Admin --</option>';
-            return;
-        }
+        if (!BIN_ID) return;
         try {
             let res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
                 headers: { 'X-Master-Key': API_KEY }
             });
             let data = await res.json();
             roster = data.record || {};
-            initDropdown();
         } catch (e) {
             console.error("Error loading data", e);
         }
     }
 
-    function initDropdown() {
-        let select = document.getElementById('memberSelect');
-        let keys = Object.keys(roster).sort();
-        
-        select.innerHTML = '<option value="">-- Piliin ang Pangalan Mo --</option>';
-        keys.forEach(ign => {
-            let opt = document.createElement('option');
-            opt.value = ign;
-            opt.textContent = ign;
-            select.appendChild(opt);
-        });
+    function handleEnter(e) {
+        if (e.key === 'Enter') {
+            searchMySlots();
+        }
     }
 
-    function showMySlots() {
-        let selectedIgn = document.getElementById('memberSelect').value;
+    function searchMySlots() {
+        let query = document.getElementById('ignInput').value.trim().toLowerCase();
         let container = document.getElementById('mySlotsContainer');
 
-        if (!selectedIgn || !roster[selectedIgn]) {
-            container.innerHTML = `<span style="color: #9ca3af; font-size: 13px;">Wala pang nakatalagang slot para sa pangalang ito.</span>`;
+        if (!query) {
+            container.innerHTML = `<span style="color: #ef4444; font-size: 13px;">Mangyaring maglagay ng IGN.</span>`;
             return;
         }
 
-        let slots = roster[selectedIgn];
-        let html = '';
+        // Hanapin nang hindi pinapansin ang malaki/maliit na titik (case-insensitive search)
+        let foundKey = Object.keys(roster).find(k => k.toLowerCase() === query);
+
+        if (!foundKey || !roster[foundKey] || roster[foundKey].length === 0) {
+            container.innerHTML = `<span style="color: #9ca3af; font-size: 13px;">Walang nakitang slot o maling IGN para sa "<b>${document.getElementById('ignInput').value}</b>". Subukang ulitin.</span>`;
+            return;
+        }
+
+        let slots = roster[foundKey];
+        let html = `<div style="font-size: 13px; color: #9ca3af; margin-bottom: 10px;">Resulta para kay: <b style="color:#fff;">${foundKey}</b></div>`;
+        
         slots.forEach(slot => {
-            html += `<div class="slot-box"><span>🔹</span> <b>${slot}</b></div>`;
+            // Paghiwalayin ang Item at Slot location para mas maganda tingnan
+            html += `
+                <div class="slot-card">
+                    <span class="item-name">🔹 ${slot}</span>
+                </div>
+            `;
         });
+
         container.innerHTML = html;
     }
 
