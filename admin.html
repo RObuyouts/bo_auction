@@ -219,6 +219,7 @@
     }
 
     function processFeathers() {
+        let stockPuppet = parseInt(document.getElementById('stockPuppet').value) || 0;
         let stockLnD = parseInt(document.getElementById('stockLnD').value) || 0;
         let stockTaS = parseInt(document.getElementById('stockTaS').value) || 0;
         let rawNames = document.getElementById('featherMembers').value;
@@ -229,7 +230,9 @@
             return;
         }
 
-        let globalIndex = 0;
+        // Dito natin sinisigurong ang simula ng feathers ay susunod pagkatapos ng huling slot ng puppet fragments!
+        let globalIndex = stockPuppet;
+
         function assignFeathersWithRotation(itemName, totalStock) {
             if (totalStock <= 0) return;
             let numMembers = members.length;
@@ -257,7 +260,7 @@
 
         saveData();
         updateUI();
-        alert('Na-distribute na ang Feathers!');
+        alert('Na-distribute na ang Feathers nang sunod sa Puppet Fragments!');
     }
 
     function removeSlot(ign, index) {
