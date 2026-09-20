@@ -84,21 +84,21 @@
 <div class="container">
     <div class="header">
         <h1>⚔️ BuyOuts Auction - Member Portal</h1>
-        <p style="margin: 5px 0 0 0; font-size: 13px; color: #9ca3af;">I-type ang iyong In-Game Name (IGN) para makita ang iyong mga napanalunang slot.</p>
+        <p style="margin: 5px 0 0 0; font-size: 13px; color: #9ca3af;">Type your In-Game Name (IGN) to see your assigned slot.</p>
     </div>
 
     <div class="card">
-        <label>Ilagay ang iyong IGN:</label>
+        <label>Put your pangit na IGN:</label>
         <div class="search-box">
-            <input type="text" id="ignInput" placeholder="Halimbawa: Rene" onkeypress="handleEnter(event)">
-            <button onclick="searchMySlots()">Hanapin</button>
+            <input type="text" id="ignInput" placeholder="Example: Rene" onkeypress="handleEnter(event)">
+            <button onclick="searchMySlots()">Search</button>
         </div>
     </div>
 
     <div class="card">
-        <h2>📋 Mga Nakatalagang Slot Mo:</h2>
+        <h2>📋 Your assigned Slot:</h2>
         <div id="mySlotsContainer">
-            <span style="color: #9ca3af; font-size: 13px;">I-type ang iyong IGN sa itaas at pindutin ang Hanapin.</span>
+            <span style="color: #9ca3af; font-size: 13px;">Type your IGN then click Search.</span>
         </div>
     </div>
 
@@ -140,12 +140,12 @@
         let foundKey = Object.keys(roster).find(k => k.toLowerCase() === query);
 
         if (!foundKey || !roster[foundKey] || roster[foundKey].length === 0) {
-            container.innerHTML = `<span style="color: #9ca3af; font-size: 13px;">Walang nakitang slot o maling IGN para sa "<b>${document.getElementById('ignInput').value}</b>". Subukang ulitin.</span>`;
+            container.innerHTML = `<span style="color: #9ca3af; font-size: 13px;">Di ka nagpalista Kupal ka"<b>${document.getElementById('ignInput').value}</b>". Try again.</span>`;
             return;
         }
 
         let slots = roster[foundKey];
-        let html = `<div style="font-size: 13px; color: #9ca3af; margin-bottom: 10px;">Resulta para kay: <b style="color:#fff;">${foundKey}</b></div>`;
+        let html = `<div style="font-size: 13px; color: #9ca3af; margin-bottom: 10px;">Assigned slot for: <b style="color:#fff;">${foundKey}</b></div>`;
         
         slots.forEach(slot => {
             html += `
