@@ -93,11 +93,11 @@
         <!-- Panel 1: Puppet Fragments -->
         <div class="card">
             <h2>🧩 Puppet Fragments Assignment</h2>
-            <label>Dami ng Puppet Fragments:</label>
+            <label>Total amount of Puppet Fragments:</label>
             <input type="number" id="stockPuppet" min="0" value="4">
-            <label>Listahan ng mga IGN (Isang pangalan bawat linya):</label>
+            <label>Lists of Participating IGN (1 IGN per line):</label>
             <textarea id="puppetMembers" rows="5" placeholder="Member1&#10;Member2..."></textarea>
-            <button class="btn-success" onclick="processPuppet()">I-assign ang Puppet</button>
+            <button class="btn-success" onclick="processPuppet()">Assign the Puppet</button>
         </div>
 
         <!-- Panel 2: Feathers -->
@@ -113,26 +113,26 @@
                     <input type="number" id="stockTaS" min="0" value="80">
                 </div>
             </div>
-            <label>Listahan ng mga IGN (Isang pangalan bawat linya):</label>
+            <label>Lists of participating IGN (1 IGN per line):</label>
             <textarea id="featherMembers" rows="5" placeholder="Member1&#10;Member2..."></textarea>
-            <button class="btn-success" onclick="processFeathers()">I-distribute ang Feathers</button>
+            <button class="btn-success" onclick="processFeathers()">Assign Feathers</button>
         </div>
     </div>
 
     <!-- Master List Table -->
     <div class="card">
         <h2>📋 Master Assignment List (Total Members: <span id="admTotalMembers">0</span>)</h2>
-        <button class="btn-danger" style="margin-bottom: 10px;" onclick="clearAllData()">I-clear Lahat ng Data</button>
+        <button class="btn-danger" style="margin-bottom: 10px;" onclick="clearAllData()">Clear all Data</button>
         <table>
             <thead>
                 <tr>
                     <th>Member (IGN)</th>
-                    <th>Mga Nakatalagang Slot (Page & Row)</th>
+                    <th>Assigned Slot (Page & Row)</th>
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody id="adminMasterTable">
-                <tr><td colspan="3" style="text-align:center; color:#9ca3af;">Nag-a-load ng data mula sa cloud...</td></tr>
+                <tr><td colspan="3" style="text-align:center; color:#9ca3af;">Loading data from cloud storage...</td></tr>
             </tbody>
         </table>
     </div>
@@ -201,7 +201,7 @@
 
         saveData();
         updateUI();
-        alert('Matagumpay na na-assign ang Puppet Fragments!');
+        alert('Successfully Assigned!');
     }
 
     function processFeathers() {
@@ -226,7 +226,7 @@
                 let pageNum = Math.floor(globalIndex / 4) + 1;
                 let rowNum = (globalIndex % 4) + 1;
                 let isExtra = i >= (Math.floor(totalStock / numMembers) * numMembers);
-                let labelExtra = isExtra ? ` (${itemName} - Extra/Rotation)` : ` (${itemName})`;
+                let labelExtra = isExtra ? ` (${itemName})` : ` (${itemName})`;
                 let slotText = `Page ${pageNum}, Row ${rowNum}${labelExtra}`;
 
                 if (!roster[targetMember]) roster[targetMember] = [];
@@ -245,7 +245,7 @@
 
         saveData();
         updateUI();
-        alert('Na-distribute na ang Feathers nang sunod sa Puppet Fragments!');
+        alert('Successfully Distributed!');
     }
 
     function removeSlot(ign, index) {
@@ -256,7 +256,7 @@
     }
 
     function clearAllData() {
-        if (confirm('Sigurado ka bang gusto mong burahin ang lahat ng assignments?')) {
+        if (confirm('Are you sure?')) {
             roster = {};
             saveData();
             updateUI();
@@ -268,7 +268,7 @@
         let keys = Object.keys(roster);
 
         if (keys.length === 0) {
-            tableHTML = `<tr><td colspan="3" style="text-align:center; color:#9ca3af;">Wala pang nakatalagang miyembro.</td></tr>`;
+            tableHTML = `<tr><td colspan="3" style="text-align:center; color:#9ca3af;">No member listed.</td></tr>`;
         } else {
             keys.forEach((ign) => {
                 let slots = roster[ign];
@@ -283,7 +283,7 @@
                     <tr>
                         <td><b>${ign}</b></td>
                         <td>${slotsHTML}</td>
-                        <td><button class="btn-danger" onclick="delete roster['${ign}']; saveData(); updateUI();">Alisin Lahat</button></td>
+                        <td><button class="btn-danger" onclick="delete roster['${ign}']; saveData(); updateUI();">Remove all</button></td>
                     </tr>
                 `;
             });
